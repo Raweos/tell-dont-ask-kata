@@ -34,37 +34,40 @@ public class Order {
     }
 
     public void requestForApprove(OrderApprovalRequest request) {
-
-        if (this.status.equals(OrderStatus.SHIPPED)) {
-            throw new ShippedOrdersCannotBeChangedException();
-        }
-
-        if (request.isApproved() && this.status.equals(OrderStatus.REJECTED)) {
-            throw new RejectedOrderCannotBeApprovedException();
-        }
-
-        if (!request.isApproved() && this.status.equals(OrderStatus.APPROVED)) {
-            throw new ApprovedOrderCannotBeRejectedException();
-        }
-
+        validateRequestForApprove(request);
         this.status = (request.isApproved() ? OrderStatus.APPROVED : OrderStatus.REJECTED);
     }
 
-    public void addOrderItem(SellItemRequest itemRequest, Product product){
-            if (product == null) {
-                throw new UnknownProductException();
-            }
-            else {
-                final OrderItem orderItem = new OrderItem();
-                orderItem.createItem(itemRequest, product);
-                this.items.add(orderItem);
-
-                this.total = this.total.add(orderItem.getTaxedAmount());
-                this.tax = this.tax.add(orderItem.getTax());
+    public void addOrderItem(SellItemRequest itemRequest, Product product) {
+        if (product == null) {
+            throw new UnknownProductException();
+        } else {
+            final OrderItem orderItem = new OrderItem(itemRequest, product);
+            this.items.add(orderItem);
+            addTaxesFromOrderItem(orderItem);
         }
     }
 
-    public void orderShipment(ShipmentService shipmentService){
+    public void orderShipment(ShipmentService shipmentService) {
+        checkIfOrderValidToShip();
+        shipmentService.ship(this);
+        this.status = OrderStatus.SHIPPED;
+
+    }
+
+    private void validateRequestForApprove(OrderApprovalRequest request) {
+        if (this.status.equals(OrderStatus.SHIPPED)) {
+            throw new ShippedOrdersCannotBeChangedException();
+        }
+        if (request.isApproved() && this.status.equals(OrderStatus.REJECTED)) {
+            throw new RejectedOrderCannotBeApprovedException();
+        }
+        if (!request.isApproved() && this.status.equals(OrderStatus.APPROVED)) {
+            throw new ApprovedOrderCannotBeRejectedException();
+        }
+    }
+
+    private void checkIfOrderValidToShip() {
         if (this.status.equals(CREATED) || this.status.equals(REJECTED)) {
             throw new OrderCannotBeShippedException();
         }
@@ -72,9 +75,11 @@ public class Order {
         if (this.status.equals(SHIPPED)) {
             throw new OrderCannotBeShippedTwiceException();
         }
-        shipmentService.ship(this);
-        this.status = OrderStatus.SHIPPED;
+    }
 
+    private void addTaxesFromOrderItem(OrderItem orderItem) {
+        this.total = this.total.add(orderItem.getTaxedAmount());
+        this.tax = this.tax.add(orderItem.getTax());
     }
 
     public BigDecimal getTotal() {

@@ -1,6 +1,5 @@
 package it.gabrieletondi.telldontaskkata.useCase;
 
-import com.sun.org.apache.regexp.internal.RE;
 import it.gabrieletondi.telldontaskkata.domain.Order;
 import it.gabrieletondi.telldontaskkata.domain.OrderStatus;
 import it.gabrieletondi.telldontaskkata.doubles.TestOrderRepository;
@@ -15,7 +14,7 @@ public class OrderApprovalUseCaseTest {
     private final OrderApprovalUseCase useCase = new OrderApprovalUseCase(orderRepository);
 
     @Test
-    public void approvedExistingOrder() throws Exception {
+    public void approvedExistingOrder() {
         Order initialOrder = new Order(OrderStatus.CREATED, 1);
         orderRepository.addOrder(initialOrder);
 
@@ -30,7 +29,7 @@ public class OrderApprovalUseCaseTest {
     }
 
     @Test
-    public void rejectedExistingOrder() throws Exception {
+    public void rejectedExistingOrder() {
         Order initialOrder = new Order(OrderStatus.CREATED, 1);
         orderRepository.addOrder(initialOrder);
 
@@ -45,7 +44,7 @@ public class OrderApprovalUseCaseTest {
     }
 
     @Test(expected = RejectedOrderCannotBeApprovedException.class)
-    public void cannotApproveRejectedOrder() throws Exception {
+    public void cannotApproveRejectedOrder() {
         Order initialOrder = new Order(OrderStatus.REJECTED, 1);
         orderRepository.addOrder(initialOrder);
 
@@ -59,7 +58,7 @@ public class OrderApprovalUseCaseTest {
     }
 
     @Test(expected = ApprovedOrderCannotBeRejectedException.class)
-    public void cannotRejectApprovedOrder() throws Exception {
+    public void cannotRejectApprovedOrder() {
         Order initialOrder = new Order(OrderStatus.APPROVED, 1);
         orderRepository.addOrder(initialOrder);
 
@@ -73,7 +72,7 @@ public class OrderApprovalUseCaseTest {
     }
 
     @Test(expected = ShippedOrdersCannotBeChangedException.class)
-    public void shippedOrdersCannotBeApproved() throws Exception {
+    public void shippedOrdersCannotBeApproved() {
         Order initialOrder = new Order(OrderStatus.SHIPPED, 1);
         orderRepository.addOrder(initialOrder);
 
@@ -87,7 +86,7 @@ public class OrderApprovalUseCaseTest {
     }
 
     @Test(expected = ShippedOrdersCannotBeChangedException.class)
-    public void shippedOrdersCannotBeRejected() throws Exception {
+    public void shippedOrdersCannotBeRejected() {
         Order initialOrder = new Order(OrderStatus.SHIPPED, 1);
         orderRepository.addOrder(initialOrder);
 

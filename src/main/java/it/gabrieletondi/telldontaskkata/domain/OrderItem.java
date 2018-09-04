@@ -13,7 +13,7 @@ public class OrderItem {
     private BigDecimal taxedAmount;
     private BigDecimal tax;
 
-    public void createItem(SellItemRequest itemRequest, Product product){
+    OrderItem(SellItemRequest itemRequest, Product product) {
         final BigDecimal unitaryTax = product.getPrice().divide(valueOf(100)).multiply(product.getCategory().getTaxPercentage()).setScale(2, HALF_UP);
         final BigDecimal unitaryTaxedAmount = product.getPrice().add(unitaryTax).setScale(2, HALF_UP);
         final BigDecimal taxedAmount = unitaryTaxedAmount.multiply(BigDecimal.valueOf(itemRequest.getQuantity())).setScale(2, HALF_UP);
