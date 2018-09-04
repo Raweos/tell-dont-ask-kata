@@ -1,12 +1,13 @@
 package it.gabrieletondi.telldontaskkata.domain;
 
-import it.gabrieletondi.telldontaskkata.service.ShipmentService;
-import it.gabrieletondi.telldontaskkata.useCase.*;
+import it.gabrieletondi.telldontaskkata.useCase.OrderApprovalRequest;
+import it.gabrieletondi.telldontaskkata.useCase.SellItemRequest;
+import it.gabrieletondi.telldontaskkata.useCase.UnknownProductException;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-import static it.gabrieletondi.telldontaskkata.domain.OrderStatus.*;
+import static it.gabrieletondi.telldontaskkata.domain.OrderStatus.SHIPPED;
 
 public class Order {
     private BigDecimal total;
@@ -33,11 +34,6 @@ public class Order {
         this.id = id;
     }
 
-    public void requestForApprove(OrderApprovalRequest request) {
-        validateRequestForApprove(request);
-        this.status = (request.isApproved() ? OrderStatus.APPROVED : OrderStatus.REJECTED);
-    }
-
     public void addOrderItem(SellItemRequest itemRequest, Product product) {
         if (product == null) {
             throw new UnknownProductException();
@@ -48,38 +44,13 @@ public class Order {
         }
     }
 
-    public void orderShipment(ShipmentService shipmentService) {
-        checkIfOrderValidToShip();
-        shipmentService.ship(this);
-        this.status = OrderStatus.SHIPPED;
-
-    }
-
-    private void validateRequestForApprove(OrderApprovalRequest request) {
-        if (this.status.equals(OrderStatus.SHIPPED)) {
-            throw new ShippedOrdersCannotBeChangedException();
-        }
-        if (request.isApproved() && this.status.equals(OrderStatus.REJECTED)) {
-            throw new RejectedOrderCannotBeApprovedException();
-        }
-        if (!request.isApproved() && this.status.equals(OrderStatus.APPROVED)) {
-            throw new ApprovedOrderCannotBeRejectedException();
-        }
-    }
-
-    private void checkIfOrderValidToShip() {
-        if (this.status.equals(CREATED) || this.status.equals(REJECTED)) {
-            throw new OrderCannotBeShippedException();
-        }
-
-        if (this.status.equals(SHIPPED)) {
-            throw new OrderCannotBeShippedTwiceException();
-        }
-    }
-
     private void addTaxesFromOrderItem(OrderItem orderItem) {
         this.total = this.total.add(orderItem.getTaxedAmount());
         this.tax = this.tax.add(orderItem.getTax());
+    }
+
+    void approve(OrderApprovalRequest request) {
+        this.status = request.isApproved() ? OrderStatus.APPROVED : OrderStatus.REJECTED;
     }
 
     public BigDecimal getTotal() {
@@ -104,5 +75,9 @@ public class Order {
 
     public int getId() {
         return id;
+    }
+
+    void markAsShipped() {
+        this.status = SHIPPED;
     }
 }

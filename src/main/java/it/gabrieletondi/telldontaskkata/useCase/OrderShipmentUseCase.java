@@ -1,6 +1,7 @@
 package it.gabrieletondi.telldontaskkata.useCase;
 
 import it.gabrieletondi.telldontaskkata.domain.Order;
+import it.gabrieletondi.telldontaskkata.domain.ShipmentManager;
 import it.gabrieletondi.telldontaskkata.repository.OrderRepository;
 import it.gabrieletondi.telldontaskkata.service.ShipmentService;
 
@@ -15,7 +16,8 @@ class OrderShipmentUseCase {
 
     void run(OrderShipmentRequest request) {
         final Order order = orderRepository.getById(request.getOrderId());
-        order.orderShipment(shipmentService);
+        final ShipmentManager shipmentManager = new ShipmentManager(order, shipmentService);
+        shipmentManager.orderShipment();
         orderRepository.save(order);
     }
 }
